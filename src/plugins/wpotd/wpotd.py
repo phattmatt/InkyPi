@@ -18,22 +18,13 @@ logger = logging.getLogger(__name__)
 class Wpotd(BasePlugin):
     def generate_settings_template(self):
         template_params = super().generate_settings_template()
-        template_params['api_key'] = {
-            "required": True,
-            "service": "NASA",
-            "expected_key": "NASA_SECRET"
-        }
         template_params['style_settings'] = False
         return template_params
 
     def generate_image(self, settings, device_config):
         logger.info(f"WPOTD plugin settings: {settings}")
 
-        api_key = device_config.load_env_key("NASA_SECRET")
-        if not api_key:
-            raise RuntimeError("NASA API Key not configured.")
-
-        params = {"api_key": api_key}
+        params = {}
 
         if settings.get("randomizeWpotd") == "true":
             start = datetime(2015, 1, 1)
@@ -44,24 +35,68 @@ class Wpotd(BasePlugin):
         elif settings.get("customDate"):
             params["date"] = settings["customDate"]
 
-        response = requests.get("https://api.nasa.gov/planetary/apod", params=params)
+        data = fetch_potd(cur_date)
 
-        if response.status_code != 200:
-            logger.error(f"NASA API error: {response.text}")
-            raise RuntimeError("Failed to retrieve NASA APOD.")
-
-        data = response.json()
-
-        if data.get("media_type") != "image":
-            raise RuntimeError("APOD is not an image today.")
-
-        image_url = data.get("hdurl") or data.get("url")
 
         try:
-            img_data = requests.get(image_url)
+            img_data = requests.get(data["image_src"])
             image = Image.open(BytesIO(img_data.content))
         except Exception as e:
             logger.error(f"Failed to load APOD image: {str(e)}")
             raise RuntimeError("Failed to load APOD image.")
 
         return image
+    
+    def fetch_potd(cur_date):
+        """
+        Returns image data related to the current POTD
+        """
+
+        date_iso = cur_date.isoformat()
+        title = "Template:POTD protected/" + date_iso
+
+        params = {
+            "action": "query",
+            "format": "json",
+            "formatversion": "2",
+            "prop": "images",
+            "titles": title
+        }
+
+        response = SESSION.get(url=ENDPOINT, params=params)
+        data = response.json()
+
+        filename = data["query"]["pages"][0]["images"][0]["title"]
+        image_src = fetch_image_src(filename)
+        image_page_url = "https://en.wikipedia.org/wiki/Template:POTD_protected/" + date_iso
+
+        image_data = {
+            "filename": filename,
+            "image_src": image_src,
+            "image_page_url": image_page_url,
+            "date": cur_date
+        }
+
+        return image_data
+
+
+    def fetch_image_src(filename):
+    """
+    Returns the POTD's image url
+    """
+
+    params = {
+        "action": "query",
+        "format": "json",
+        "prop": "imageinfo",
+        "iiprop": "url",
+        "titles": filename
+    }
+
+    response = SESSION.get(url=ENDPOINT, params=params)
+    data = response.json()
+    page = next(iter(data["query"]["pages"].values()))
+    image_info = page["imageinfo"][0]
+    image_url = image_info["url"]
+
+    return image_url
