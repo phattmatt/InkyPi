@@ -130,6 +130,20 @@
         if (loadPluginSettings) {
             viewMode = pluginSettings.viewMode
             language = pluginSettings.language
+
+            document.getElementById('displayTitle').checked = pluginSettings.displayTitle;
+            document.getElementById('displayTitle').value = pluginSettings.displayTitle;
+
+            document.getElementById('displayWeekends').checked = pluginSettings.displayWeekends;
+            document.getElementById('displayWeekends').value = pluginSettings.displayWeekends;
+
+            document.getElementById('displayEventTime').checked = pluginSettings.displayEventTime;
+            document.getElementById('displayEventTime').value = pluginSettings.displayEventTime;
+
+            document.getElementById('weekStartDay').value = pluginSettings.weekStartDay;
+
+            document.getElementById("startTimeInterval").value = pluginSettings.startTimeInterval;
+            document.getElementById("endTimeInterval").value = pluginSettings.endTimeInterval;
             
             if (pluginSettings["calendarURLs[]"]) {
                 calendars = pluginSettings["calendarURLs[]"].map((url, i) => ({
