@@ -1,8 +1,7 @@
 """
 Wpotd Plugin for InkyPi
-This plugin fetches the Astronomy Picture of the Day (Wpotd) from NASA's API
+This plugin fetches the Wikipedia Picture of the Day (Wpotd) from Wikipedia's API
 and displays it on the InkyPi device. It supports optional manual date selection or random dates.
-For the API key, set `NASA_SECRET={API_KEY}` in your .env file.
 """
 
 from plugins.base_plugin.base_plugin import BasePlugin
@@ -35,8 +34,7 @@ class Wpotd(BasePlugin):
         elif settings.get("customDate"):
             params["date"] = settings["customDate"]
 
-        data = fetch_potd(cur_date)
-
+        data = self.fetch_potd(params["date"])
 
         try:
             img_data = requests.get(data["image_src"])
@@ -47,7 +45,7 @@ class Wpotd(BasePlugin):
 
         return image
     
-    def fetch_potd(cur_date):
+    def fetch_potd(self, cur_date):
         """
         Returns image data related to the current POTD
         """
@@ -63,11 +61,11 @@ class Wpotd(BasePlugin):
             "titles": title
         }
 
-        response = SESSION.get(url=ENDPOINT, params=params)
+        response = requests.get(url="https://en.wikipedia.org/w/api.php", params=params)
         data = response.json()
 
         filename = data["query"]["pages"][0]["images"][0]["title"]
-        image_src = fetch_image_src(filename)
+        image_src = self.fetch_image_src(filename)
         image_page_url = "https://en.wikipedia.org/wiki/Template:POTD_protected/" + date_iso
 
         image_data = {
@@ -80,23 +78,23 @@ class Wpotd(BasePlugin):
         return image_data
 
 
-    def fetch_image_src(filename):
-    """
-    Returns the POTD's image url
-    """
+    def fetch_image_src(self, filename):
+        """
+        Returns the POTD's image url
+        """
 
-    params = {
-        "action": "query",
-        "format": "json",
-        "prop": "imageinfo",
-        "iiprop": "url",
-        "titles": filename
-    }
+        params = {
+            "action": "query",
+            "format": "json",
+            "prop": "imageinfo",
+            "iiprop": "url",
+           "titles": filename
+        }
 
-    response = SESSION.get(url=ENDPOINT, params=params)
-    data = response.json()
-    page = next(iter(data["query"]["pages"].values()))
-    image_info = page["imageinfo"][0]
-    image_url = image_info["url"]
+        response = requests.get(url="https://en.wikipedia.org/w/api.php", params=params)
+        data = response.json()
+        page = next(iter(data["query"]["pages"].values()))
+        image_info = page["imageinfo"][0]
+        image_url = image_info["url"]
 
-    return image_url
+        return image_url
