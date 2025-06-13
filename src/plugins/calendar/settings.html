@@ -6,7 +6,7 @@
 
 <div class="form-group">
     <div class="form-group">
-        <label class="form-label">View: </label>
+        <label class="form-label">Layout: </label>
         <div class="button-group" id="viewSelector">
             <button type="button" data-value="timeGridDay" onclick="selectView(this)">Day</button>
             <button type="button" data-value="timeGridWeek" onclick="selectView(this)">Week</button>
@@ -24,6 +24,49 @@
         </select>
     </div>
 </div>
+
+<div class="form-group">
+    <label for="displayTitle" class="form-label">Display: </label>
+
+    <div class="form-group">
+      <input type="checkbox" id="displayTitle" name="displayTitle" value="true" checked onclick="this.value=this.checked ? 'true' : 'false';">
+      <span>Title</span>
+    </div>
+
+    <div class="form-group">
+        <input type="checkbox" id="displayWeekends" name="displayWeekends" value="true" checked onclick="this.value=this.checked ? 'true' : 'false';">
+        <span>Weekends</span>
+    </div>
+
+    <div class="form-group">
+      <input type="checkbox" id="displayEventTime" name="displayEventTime" value="true" checked onclick="this.value=this.checked ? 'true' : 'false';">
+      <span>Event Time</span>
+    </div>
+</div>
+
+<div class="form-group">
+    <div class="form-group nowrap">
+        <label for="weekStartDay" class="form-label">Week Start Day:</label>
+        <select id="weekStartDay" name="weekStartDay" class="form-input">
+            <option value="0">Sunday</option>
+            <option value="1">Monday</option>
+            <option value="2">Tuesday</option>
+            <option value="3">Wednesday</option>
+            <option value="4">Thursday</option>
+            <option value="5">Friday</option>
+            <option value="6">Saturday</option>
+        </select>
+    </div>
+
+    <div class="form-group nowrap">
+        <label for="interval">Time Interval:</label>
+        <input type="number" id="startTimeInterval" name="startTimeInterval" class="form-input" min="0" max="24" placeholder="00">
+        -
+        <input type="number" id="endTimeInterval" name="endTimeInterval" class="form-input" min="0" max="24" placeholder="24">
+    </div>
+</div>
+
+
 
 <script>
     function selectView(button) {

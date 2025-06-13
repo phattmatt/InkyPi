@@ -5,7 +5,9 @@
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
 
-<div id="calendar">
+<div id="calendar" class="calendar" style="
+--fc-page-bg-color: '{{ plugin_settings.backgroundColor or white }}';
+">
 
 </div>
 
@@ -14,19 +16,38 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         const calendarEl = document.getElementById('calendar');
+        const timeFormat = {
+            hour: "numeric",
+            minute: "2-digit",
+            omitZeroMinute: {{ (time_format == "12h") | tojson }},
+            hour12: {{ (time_format == "12h") | tojson }},
+            meridiem: 'short'
+        };
+
         const calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: '{{ view }}',
+            events: events,
             now: '{{ current_dt }}',
             timeZone: '{{ timezone }}',
-            nowIndicator: true,
-            height: 'auto',
-            contentHeight: 'auto',
+            eventBorderColor: '{{ plugin_settings.textColor }}',
+            contentHeight: '100%',
+            slotDuration: '00:30:00',
+            expandRows: true,
+            locale: "{{ plugin_settings.language or 'en' }}",
+            firstDay: "{{ plugin_settings.weekStartDay or 0}}",
+            slotLabelFormat: timeFormat,
+            slotMinTime: "{{ plugin_settings.startTimeInterval or 00}}:00:00",
+            slotMaxTime: "{{ plugin_settings.endTimeInterval or 24}}:00:00",
+            eventTimeFormat: timeFormat,
+            displayEventTime: {{ (plugin_settings.displayEventTime != "false") | tojson}},
+            weekends:  {{ (plugin_settings.displayWeekends != "false") | tojson}},
+            fixedWeekCount: false,
             headerToolbar: {
                 left: '',
-                center: 'title',
+                center: "{{ 'title' if plugin_settings.displayTitle != 'false' else '' }}",
                 right: ''
             },
-            events: events
+            slotDuration: "01:00:00"
         });
         calendar.render();
     });

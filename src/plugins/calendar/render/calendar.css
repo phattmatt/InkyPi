@@ -1,3 +1,46 @@
+/* Basic Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.calendar {
+  width: 100%;
+  height: 100%;
+  font-family: "Jost";
+  overflow: hidden;
+}
+
+.fc-toolbar.fc-header-toolbar {
+  margin-bottom: 0px !important;
+}
+
+.fc .fc-daygrid-body-natural .fc-daygrid-day-events {
+  margin-bottom: 0px !important;
+  
+}
+
+.fc .fc-daygrid-day-number {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important; 
+}
+
 .fc-widget-header{
-    background-color:blue;
+    background-color:white;
+}
+
+.fc-scrollgrid {
+      border-color: transparent !important;
+}
+.fc-scrollgrid td:last-of-type {
+    border-right-color: transparent !important;
+}
+.fc-scrollgrid-section.fc-scrollgrid-section-body td[role='presentation'] {
+    border-bottom-color: transparent !important;
+}
+th {
+    border-top-color: transparent !important;
+    border-right-color: transparent !important;
+    border-left-color: transparent !important;
 }

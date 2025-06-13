@@ -23,7 +23,9 @@ class Calendar(BasePlugin):
     def generate_image(self, settings, device_config):
         calendar_urls = settings.get('calendarURLs[]')
         calendar_colors = settings.get('calendarColors[]')
-        view = settings.get("view")
+        view = settings.get("viewMode")
+
+        print(settings)
 
         if not view:
             raise RuntimeError("View is required")
@@ -45,18 +47,19 @@ class Calendar(BasePlugin):
         tz = pytz.timezone(timezone)
 
         current_dt = datetime.now(tz)
-        
-        #current_time = 
-        events = self.fetch_ics_events(calendar_urls, calendar_colors, tz)
+        start, end = self.get_view_range(view, current_dt)
+        events = self.fetch_ics_events(calendar_urls, calendar_colors, tz, start, end)
         if not events:
             logger.warn("No events found for ics url")
         
-        template_params = {}
-        template_params["events"] = events
-        template_params["view"] = view
-        template_params["current_dt"] = current_dt.isoformat()
-        template_params["timezone"] = timezone
-        template_params["plugin_settings"] = settings
+        template_params = {
+            "view": view,
+            "events": events,
+            "current_dt": current_dt.isoformat(),
+            "timezone": timezone,
+            "plugin_settings": settings,
+            "time_format": time_format
+        }
 
         image = self.render_image(dimensions, "calendar.html", "calendar.css", template_params)
 
@@ -64,12 +67,8 @@ class Calendar(BasePlugin):
             raise RuntimeError("Failed to take screenshot, please check logs.")
         return image
     
-    def fetch_ics_events(self, calendar_urls, colors, tz):
+    def fetch_ics_events(self, calendar_urls, colors, tz, start_range, end_range):
         parsed_events = []
-
-        now = datetime.utcnow()
-        start_range = now - timedelta(days=7)
-        end_range = now + timedelta(days=30)
 
         for calendar_url, color in zip(calendar_urls, colors):
             cal = self.fetch_calendar(calendar_url)
@@ -77,12 +76,10 @@ class Calendar(BasePlugin):
 
             for event in events:
                 start, end, all_day = self.parse_data_points(event, tz)
-                if(str(event.get("summary")) == 'Recurring Event'):
-                    print(event.get('dtstart'), event.get('dtend'), event.get('duration'))
                 parsed_event = {
                     "title": str(event.get("summary")),
                     "start": start,
-                    "color": color,
+                    "backgroundColor": color,
                     "allDay": all_day
                 }
                 if end:
@@ -92,8 +89,21 @@ class Calendar(BasePlugin):
 
         return parsed_events
     
-    #def determine_start_end(self, )
-    
+    def get_view_range(self, view, current_dt):
+        start = datetime(current_dt.year, current_dt.month, current_dt.day)
+        if view == "timeGridDay":
+            end = start + timedelta(days=1)
+        elif view == "timeGridWeek":
+            start = current_dt - timedelta(days=current_dt.weekday())
+            start = datetime(start.year, start.month, start.day)
+            end = start + timedelta(days=7)
+        elif view == "dayGridMonth":
+            start = datetime(current_dt.year, current_dt.month, 1) - timedelta(weeks=1)
+            end = datetime(current_dt.year, current_dt.month, 1) + timedelta(weeks=6)
+        elif view == "listMonth":
+            end = start + timedelta(weeks=5)
+        return start, end
+        
     def parse_data_points(self, event, tz):
         all_day = False
         dtstart = event.decoded("dtstart")
