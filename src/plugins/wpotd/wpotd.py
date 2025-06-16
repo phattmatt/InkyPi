@@ -62,7 +62,7 @@ class Wpotd(BasePlugin):
         """
 
         date_iso = cur_date.isoformat()
-        title = "Template:POTD protected/" + date_iso
+        title = "Template:POTD/" + date_iso
 
         params = {
             "action": "query",
@@ -77,7 +77,7 @@ class Wpotd(BasePlugin):
 
         filename = data["query"]["pages"][0]["images"][0]["title"]
         image_src = self.fetch_image_src(filename)
-        image_page_url = "https://en.wikipedia.org/wiki/Template:POTD_protected/" + date_iso
+        image_page_url = "https://en.wikipedia.org/wiki/Template:POTD/" + date_iso
 
         image_data = {
             "filename": filename,
