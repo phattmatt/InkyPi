@@ -7,6 +7,8 @@
 
 <div id="calendar" class="calendar" style="
 --fc-page-bg-color: '{{ plugin_settings.backgroundColor or white }}';
+--fc-border-color: {{ plugin_settings.textColor }};
+--fc-today-bg-color: '';
 ">
 
 </div>
@@ -29,9 +31,8 @@
             events: events,
             now: '{{ current_dt }}',
             timeZone: '{{ timezone }}',
-            eventBorderColor: '{{ plugin_settings.textColor }}',
             contentHeight: '100%',
-            slotDuration: '00:30:00',
+            slotDuration: '01:00:00',
             expandRows: true,
             locale: "{{ plugin_settings.language or 'en' }}",
             firstDay: "{{ plugin_settings.weekStartDay or 0}}",

@@ -27,20 +27,27 @@
 }
 
 .fc-widget-header{
-    background-color:white;
+  background-color:white;
+}
+
+.fc-dayGridMonth-view .fc-daygrid-day.fc-day-today .fc-daygrid-day-frame{
+  border: 3px solid var(--fc-border-color) !important;
+}
+
+.fc-timeGridWeek-view .fc-col-header-cell.fc-day-today .fc-scrollgrid-sync-inner {
+  border: 3px solid var(--fc-border-color) !important;
+  border-top: 3px solid var(--fc-border-color) !important;
 }
 
 .fc-scrollgrid {
-      border-color: transparent !important;
+  border-color: transparent !important;
 }
 .fc-scrollgrid td:last-of-type {
-    border-right-color: transparent !important;
+  border-right-color: transparent !important;
 }
-.fc-scrollgrid-section.fc-scrollgrid-section-body td[role='presentation'] {
-    border-bottom-color: transparent !important;
-}
+
 th {
-    border-top-color: transparent !important;
-    border-right-color: transparent !important;
-    border-left-color: transparent !important;
+  border-top-color: transparent;
+  border-right-color: transparent !important;
+  border-left-color: transparent !important;
 }
