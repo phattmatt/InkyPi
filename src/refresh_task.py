@@ -120,8 +120,7 @@ class RefreshTask:
 
                         # update latest refresh data in the device config
                         self.device_config.refresh_info = RefreshInfo(**refresh_info)
-
-                    self.device_config.write_config()
+                        self.device_config.write_config()
 
             except Exception as e:
                 logging.exception('Exception during refresh')

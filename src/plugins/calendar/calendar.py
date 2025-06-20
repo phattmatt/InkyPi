@@ -25,8 +25,6 @@ class Calendar(BasePlugin):
         calendar_colors = settings.get('calendarColors[]')
         view = settings.get("viewMode")
 
-        print(settings)
-
         if not view:
             raise RuntimeError("View is required")
         elif view not in ["timeGridDay", "timeGridWeek", "dayGridMonth", "listMonth"]:
@@ -51,11 +49,14 @@ class Calendar(BasePlugin):
         events = self.fetch_ics_events(calendar_urls, calendar_colors, tz, start, end)
         if not events:
             logger.warn("No events found for ics url")
-        
+
+        if view == 'timeGridWeek' and settings.get("displayPreviousDays") != "true":
+            view = 'timeGrid'
+
         template_params = {
             "view": view,
             "events": events,
-            "current_dt": current_dt.isoformat(),
+            "current_dt": current_dt.replace(hour=0, minute=0, second=0, microsecond=0).isoformat(),
             "timezone": timezone,
             "plugin_settings": settings,
             "time_format": time_format
