@@ -30,7 +30,7 @@
   background-color:white;
 }
 
-.fc-dayGridMonth-view thead .fc-daygrid-day.fc-day-today .fc-daygrid-day-frame{
+.fc-dayGridMonth-view .fc-daygrid-day.fc-day-today .fc-daygrid-day-frame{
   border: 2px solid var(--fc-border-color) !important;
 }
 
@@ -38,9 +38,8 @@
   border: 2px solid var(--fc-border-color) !important;
 }
 
-.fc-timeGridWeek-view .fc-col-header-cell.fc-day-today .fc-scrollgrid-sync-inner {
+.fc-timeGridWeek-view thead .fc-col-header-cell.fc-day-today .fc-scrollgrid-sync-inner {
   border: 2px solid var(--fc-border-color) !important;
-  border-top: 2px solid var(--fc-border-color) !important;
 }
 
 .fc-scrollgrid {
