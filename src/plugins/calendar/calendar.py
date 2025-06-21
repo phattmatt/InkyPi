@@ -74,6 +74,7 @@ class Calendar(BasePlugin):
         for calendar_url, color in zip(calendar_urls, colors):
             cal = self.fetch_calendar(calendar_url)
             events = recurring_ical_events.of(cal).between(start_range, end_range)
+            contrast_color = self.get_contrast_color(color)
 
             for event in events:
                 start, end, all_day = self.parse_data_points(event, tz)
@@ -81,6 +82,7 @@ class Calendar(BasePlugin):
                     "title": str(event.get("summary")),
                     "start": start,
                     "backgroundColor": color,
+                    "textColor": contrast_color,
                     "allDay": all_day
                 }
                 if end:
@@ -134,3 +136,14 @@ class Calendar(BasePlugin):
             return icalendar.Calendar.from_ical(response.text)
         except Exception as e:
             raise RuntimeError(f"Failed to fetch iCalendar url: {str(e)}")
+
+    def get_contrast_color(self, color):
+        """
+        Returns '#000000' (black) or '#ffffff' (white) depending on the contrast
+        against the given color.
+        """
+        r, g, b = ImageColor.getrgb(color)
+        # YIQ formula to estimate brightness
+        yiq = (r * 299 + g * 587 + b * 114) / 1000
+
+        return '#000000' if yiq >= 150 else '#ffffff'
