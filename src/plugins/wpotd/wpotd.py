@@ -8,9 +8,7 @@ It supports optional manual date selection or random dates and can resize the im
 Wikipedia API Documentation: https://www.mediawiki.org/wiki/API:Main_page
 Picture of the Day example: https://www.mediawiki.org/wiki/API:Picture_of_the_day_viewer
 Github Repository: https://github.com/wikimedia/mediawiki-api-demos/tree/master/apps/picture-of-the-day-viewer
-
 Wikimedia requires a User Agent header for API requests, which is set in the SESSION headers:
-
 https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
 
 Flow:
@@ -59,8 +57,9 @@ class Wpotd(BasePlugin):
             logger.error("Failed to download WPOTD image.")
             raise RuntimeError("Failed to download WPOTD image.")
         if settings.get("shrinktofitWpotd") == "true":
-            image = self._shrink_to_fit(self, image, device_config["width"], device_config["height"])
-            logger.info("Image resized to fit device dimensions.")
+            max_width, max_height = device_config.get_resolution()
+            image = self._shrink_to_fit(image, max_width, max_height)
+            logger.info(f"Image resized to fit device dimensions: {max_width},{max_height}")
 
         return image
 
