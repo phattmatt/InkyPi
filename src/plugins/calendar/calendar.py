@@ -45,7 +45,7 @@ class Calendar(BasePlugin):
         tz = pytz.timezone(timezone)
 
         current_dt = datetime.now(tz)
-        start, end = self.get_view_range(view, current_dt)
+        start, end = self.get_view_range(view, current_dt, settings)
         events = self.fetch_ics_events(calendar_urls, calendar_colors, tz, start, end)
         if not events:
             logger.warn("No events found for ics url")
@@ -90,13 +90,14 @@ class Calendar(BasePlugin):
 
         return parsed_events
     
-    def get_view_range(self, view, current_dt):
+    def get_view_range(self, view, current_dt, settings):
         start = datetime(current_dt.year, current_dt.month, current_dt.day)
         if view == "timeGridDay":
             end = start + timedelta(days=1)
         elif view == "timeGridWeek":
-            start = current_dt - timedelta(days=current_dt.weekday())
-            start = datetime(start.year, start.month, start.day)
+            if settings.get("displayPreviousDays") == "true":
+                start = current_dt - timedelta(days=current_dt.weekday())
+                start = datetime(start.year, start.month, start.day)
             end = start + timedelta(days=7)
         elif view == "dayGridMonth":
             start = datetime(current_dt.year, current_dt.month, 1) - timedelta(weeks=1)

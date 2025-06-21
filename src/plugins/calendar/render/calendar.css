@@ -42,6 +42,10 @@
   border: 2px solid var(--fc-border-color) !important;
 }
 
+.fc .fc-timegrid-now-indicator-line {
+  border-top-width: 3px !important;
+}
+
 .fc-scrollgrid {
   border-color: transparent !important;
 }
