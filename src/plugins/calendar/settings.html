@@ -42,10 +42,20 @@
       <input type="checkbox" id="displayEventTime" name="displayEventTime" value="true" checked onclick="this.value=this.checked ? 'true' : 'false';">
       <span>Event Time</span>
     </div>
+
+    <div class="form-group" data-visible-modes="timeGridDay,timeGridWeek">
+      <input type="checkbox" id="displayNowIndicator" name="displayNowIndicator" value="true" checked onclick="this.value=this.checked ? 'true' : 'false';">
+      <span>Now Indicator</span>
+    </div>
+
+    <div class="form-group" data-visible-modes="timeGridWeek">
+      <input type="checkbox" id="displayPreviousDays" name="displayPreviousDays" value="true" checked onclick="this.value=this.checked ? 'true' : 'false';">
+      <span>Previous Days</span>
+    </div>
 </div>
 
 <div class="form-group">
-    <div class="form-group nowrap">
+    <div class="form-group nowrap" data-visible-modes="timeGridWeek,dayGridMonth">
         <label for="weekStartDay" class="form-label">Week Start Day:</label>
         <select id="weekStartDay" name="weekStartDay" class="form-input">
             <option value="0">Sunday</option>
@@ -58,15 +68,13 @@
         </select>
     </div>
 
-    <div class="form-group nowrap">
+    <div class="form-group nowrap" data-visible-modes="timeGridDay,timeGridWeek">
         <label for="interval">Time Interval:</label>
         <input type="number" id="startTimeInterval" name="startTimeInterval" class="form-input" min="0" max="24" placeholder="00">
         -
         <input type="number" id="endTimeInterval" name="endTimeInterval" class="form-input" min="0" max="24" placeholder="24">
     </div>
 </div>
-
-
 
 <script>
     function selectView(button) {
@@ -80,6 +88,25 @@
       // Set hidden input value from button's data-value
       const value = button.getAttribute('data-value');
       document.getElementById('viewMode').value = value;
+
+      updateViewDependentOptions(value);
+    }
+
+    function updateViewDependentOptions(viewMode) {
+        const conditionals = document.querySelectorAll('[data-visible-modes]');
+
+        conditionals.forEach(el => {
+            const allowedViews = el.getAttribute('data-visible-modes').split(',');
+            const shouldShow = allowedViews.includes(viewMode);
+
+            el.style.display = shouldShow ? '' : 'none';
+
+            // Enable or disable all inputs inside the element
+            const inputs = el.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.disabled = !shouldShow;
+            });
+        });
     }
 
     function addCalendarInput(url = '', color = '#007BFF') {
@@ -120,7 +147,6 @@
     document.addEventListener('DOMContentLoaded', () => {        
         const viewModeInput = document.getElementById('viewMode');
         const viewButtons = document.querySelectorAll('#viewSelector button');
-        const languageSelect = document.getElementById('language');
 
         // defaults
         let viewMode = "dayGridMonth";
@@ -139,6 +165,12 @@
 
             document.getElementById('displayEventTime').checked = pluginSettings.displayEventTime;
             document.getElementById('displayEventTime').value = pluginSettings.displayEventTime;
+
+            document.getElementById('displayNowIndicator').checked = pluginSettings.displayNowIndicator;
+            document.getElementById('displayNowIndicator').value = pluginSettings.displayNowIndicator;
+
+            document.getElementById('displayPreviousDays').checked = pluginSettings.displayPreviousDays;
+            document.getElementById('displayPreviousDays').value = pluginSettings.displayPreviousDays;
 
             document.getElementById('weekStartDay').value = pluginSettings.weekStartDay;
 
@@ -164,11 +196,13 @@
         });
 
         // populate language dropdown
-        languageSelect.value = language;
+        document.getElementById('language').value = language;
 
         // populate calendars
         calendars.forEach(({ url, color }) => {
             addCalendarInput(url, color);
         });
+
+        updateViewDependentOptions(viewMode)
     });
 </script>

@@ -42,7 +42,9 @@
             eventTimeFormat: timeFormat,
             displayEventTime: {{ (plugin_settings.displayEventTime == "true") | tojson}},
             weekends:  {{ (plugin_settings.displayWeekends == "true") | tojson}},
+            nowIndicator: {{ (plugin_settings.displayNowIndicator == "true") | tojson}},
             fixedWeekCount: false,
+            {% if view == 'timeGrid' %}duration: {days : 7 },{% endif %}
             headerToolbar: {
                 left: '',
                 center: "{{ 'title' if plugin_settings.displayTitle == 'true' else '' }}",
