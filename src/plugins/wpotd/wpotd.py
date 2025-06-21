@@ -1,7 +1,26 @@
 """
 Wpotd Plugin for InkyPi
 This plugin fetches the Wikipedia Picture of the Day (Wpotd) from Wikipedia's API
-and displays it on the InkyPi device. It supports optional manual date selection or random dates.
+and displays it on the InkyPi device. 
+
+It supports optional manual date selection or random dates and can resize the image to fit the device's dimensions.
+
+Wikipedia API Documentation: https://www.mediawiki.org/wiki/API:Main_page
+Picture of the Day example: https://www.mediawiki.org/wiki/API:Picture_of_the_day_viewer
+Github Repository: https://github.com/wikimedia/mediawiki-api-demos/tree/master/apps/picture-of-the-day-viewer
+
+Wikimedia requires a User Agent header for API requests, which is set in the SESSION headers:
+
+https://foundation.wikimedia.org/wiki/Policy:Wikimedia_Foundation_User-Agent_Policy
+
+Flow:
+
+1. Fetch the date to use for the Picture of the Day (POTD) based on settings. (_determine_date)
+2. Make an API request to fetch the POTD data for that date. (_fetch_potd)
+3. Extract the image filename from the response. (_fetch_potd)
+4. Make another API request to get the image URL. (_fetch_image_src)
+5. Download the image from the URL. (_download_image)
+6. Optionally resize the image to fit the device dimensions. (_shrink_to_fit))
 """
 
 from plugins.base_plugin.base_plugin import BasePlugin
@@ -31,11 +50,19 @@ class Wpotd(BasePlugin):
         datetofetch = self._determine_date(settings)
         logger.info(f"WPOTD plugin datetofetch: {datetofetch}")
 
-        data = self.fetch_potd(datetofetch)
+        data = self._fetch_potd(datetofetch)
         picurl = data["image_src"]
         logger.info(f"WPOTD plugin Picture URL: {picurl}")
 
-        return self._download_image(picurl)
+        image = self._download_image(picurl)
+        if image is None:
+            logger.error("Failed to download WPOTD image.")
+            raise RuntimeError("Failed to download WPOTD image.")
+        if settings.get("shrinktofitWpotd") == "true":
+            image = self._shrink_to_fit(self, image, device_config["width"], device_config["height"])
+            logger.info("Image resized to fit device dimensions.")
+
+        return image
 
     def _determine_date(self, settings: Dict[str, Any]) -> date:
         if settings.get("randomizeWpotd") == "true":
@@ -63,8 +90,7 @@ class Wpotd(BasePlugin):
             logger.error(f"Failed to load WPOTD image from {url}: {str(e)}")
             raise RuntimeError("Failed to load WPOTD image.")
 
-    @lru_cache(maxsize=32)
-    def fetch_potd(self, cur_date: date) -> Dict[str, Any]:
+    def _fetch_potd(self, cur_date: date) -> Dict[str, Any]:
         title = f"Template:POTD/{cur_date.isoformat()}"
         params = {
             "action": "query",
@@ -81,7 +107,7 @@ class Wpotd(BasePlugin):
             logger.error(f"Failed to retrieve POTD filename for {cur_date}: {e}")
             raise RuntimeError("Failed to retrieve POTD filename.")
 
-        image_src = self.fetch_image_src(filename)
+        image_src = self._fetch_image_src(filename)
 
         return {
             "filename": filename,
@@ -90,8 +116,7 @@ class Wpotd(BasePlugin):
             "date": cur_date
         }
 
-    @lru_cache(maxsize=64)
-    def fetch_image_src(self, filename: str) -> str:
+    def _fetch_image_src(self, filename: str) -> str:
         params = {
             "action": "query",
             "format": "json",
@@ -115,3 +140,30 @@ class Wpotd(BasePlugin):
         except Exception as e:
             logger.error(f"Wikipedia API request failed with params {params}: {str(e)}")
             raise RuntimeError("Wikipedia API request failed.")
+        
+    def _shrink_to_fit(self, image: Image.Image, max_width: int, max_height: int) -> Image.Image:
+        """
+        Resize the image to fit within max_width and max_height while maintaining aspect ratio.
+        Uses high-quality resampling.
+        """
+        orig_width, orig_height = image.size
+
+        if orig_width > max_width or orig_height > max_height:
+            # Determine whether to constrain by width or height
+            if orig_width >= orig_height:
+                # Landscape or square -> constrain by max_width
+                if orig_width > max_width:
+                    new_width = max_width
+                    new_height = int(orig_height * max_width / orig_width)
+                else:
+                    new_width, new_height = orig_width, orig_height
+            else:
+                # Portrait -> constrain by max_height
+                if orig_height > max_height:
+                    new_height = max_height
+                    new_width = int(orig_width * max_height / orig_height)
+                else:
+                    new_width, new_height = orig_width, orig_height
+            # Resize using high-quality resampling
+            image = image.resize((new_width, new_height), Image.LANCZOS)
+        return image
