@@ -6,10 +6,11 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
 
 <div id="calendar" class="calendar" style="
---fc-page-bg-color: '{{ plugin_settings.backgroundColor or white }}';
+--fc-page-bg-color: {{ plugin_settings.backgroundColor or white }};
 --fc-border-color: {{ plugin_settings.textColor }};
 --fc-today-bg-color: '';
- --fc-now-indicator-color: {{ plugin_settings.nowIndicatorColor or red }};
+--fc-now-indicator-color: {{ plugin_settings.nowIndicatorColor or red }};
+--fc-event-border-color: {{ plugin_settings.textColor or white }};
 ">
 
 </div>
