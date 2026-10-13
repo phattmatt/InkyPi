@@ -23,7 +23,7 @@ class Apod(BasePlugin):
     def generate_image(self, settings, device_config):
         logger.info("=== APOD Plugin: Starting image generation ===")
 
-        # Determine date to fetch
+        # Determine whether to fetch the latest APOD or a specific date
         if settings.get("randomizeApod") == "true":
             start = datetime(2015, 1, 1)
             end = datetime.today()
@@ -35,12 +35,15 @@ class Apod(BasePlugin):
             apod_date = datetime.strptime(settings["customDate"], "%Y-%m-%d").strftime("%y%m%d")
             logger.info(f"Fetching APOD from custom date: {apod_date}")
         else:
-            apod_date = datetime.today().strftime("%y%m%d")
+            apod_date = None
             logger.info("Fetching today's APOD")
 
         logger.debug("Requesting NASA APOD API...")
         session = get_http_session()
-        url = f"https://science.nasa.gov/wp-json/wp/v2/apod-basic/{apod_date}"
+        if apod_date is None:
+            url = "https://science.nasa.gov/wp-json/wp/v2/apod-basic?per_page=1"
+        else:
+            url = f"https://science.nasa.gov/wp-json/wp/v2/apod-basic/{apod_date}"
         response = session.get(url)
 
         if response.status_code != 200:
@@ -48,6 +51,10 @@ class Apod(BasePlugin):
             raise RuntimeError("Failed to retrieve NASA APOD.")
 
         data = response.json()
+        if apod_date is None:
+            if not isinstance(data, list) or not data:
+                raise RuntimeError("NASA APOD list did not contain a published image.")
+            data = data[0]
         logger.debug(f"APOD API response received: {data.get('title', 'No title')}")
 
         if data.get("media_type") != "image":
